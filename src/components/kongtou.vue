@@ -30,10 +30,35 @@
 </template>
 
 <script>
-import {eos} from '../main'
-import ScatterJS from 'scatterjs-core'
-import ScatterEOS from 'scatterjs-plugin-eosjs'
-import Eos from 'eosjs'
+// import {eos} from '../main'
+// import ScatterJS from 'scatterjs-core'
+// import ScatterEOS from 'scatterjs-plugin-eosjs'
+// import Eos from 'eosjs'
+//import { EosApi, JsonRpc, RpcError } from 'eosjs';
+// const { JsonRpc } = require('eosjs');
+// const fetch = require('node-fetch');           // node only; not needed in browsers
+// const rpc = new JsonRpc('https://api-kylin.eoslaomao.com', { fetch });
+
+// rpc.get_table_rows({code: "eosio.msig",scope:"yangjiani233",table:"proposal",json:"true"}).then(ress=>{
+//               console.log(ress);
+//               rpc.deserializeTransaction({transaction:ress.rows[0].packed_transaction}).then(re=>{
+//                 console.log(re);
+//               })
+//             });
+
+
+// const Fcbuffer = require('fcbuffer')
+// const assert = require('assert')
+const { Api, JsonRpc } = require('eosjs');
+const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');  // development only
+const fetch = require('node-fetch');                                // node only
+const { TextEncoder, TextDecoder } = require('text-encoding');      // React Native, IE11, and Edge Browsers only
+
+//const privateKeys = [privateKey1];
+
+//const signatureProvider = new JsSignatureProvider(privateKeys);
+const rpc = new JsonRpc('https://api-kylin.eoslaomao.com', { fetch });
+const api = new Api({ rpc, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
 // const AbiCache = require('abi-cache')
   const getLocalTime=(nS) =>{     
    return new Date(parseInt(nS) * 1000).toLocaleString().replace(/:\d{1,2}$/,' ');     
@@ -49,6 +74,29 @@ import Eos from 'eosjs'
         actionss:[],
     }),
     methods: {
+      async getTransaction(){
+          const resp = await rpc.get_table_rows({
+          json: true,              // Get the response as json
+          code: 'eosio.msig',     // Contract that we target
+          scope: 'yangjiani233',         // Account that owns the data
+          table: 'proposal',      // Table name
+          limit: 10,               // Maximum number of rows that we want to get
+          // reverse = false,         // Optional: Get reversed data
+          // show_payer = false,      // Optional: Show ram payer
+        });
+        console.log(resp.rows)
+        var p=resp.rows[0].packed_transaction;
+        var pp=[];
+        for(let i=0;i<p.length;i++){
+            pp[i]=p[i];
+        }
+        var t=new Uint8Array(pp);
+        console.log(t);
+        const res=await api.deserializeTransactionWithActions({
+          transaction:resp.rows[0].packed_transaction
+        });
+        console.log(res);
+        },
       onSelect (items) {
         this.selected = items
       },
@@ -84,18 +132,19 @@ import Eos from 'eosjs'
           
           });
           this.ok=!this.ok;
+          
       },
+      /*
         async kongtou(){
           let accountPermission=[];
+          //get permission
          await eos.getAccount("zjubcatest11").then(res=>{console.log(res.permissions);
                         for(var i=0;i<res.permissions[0].required_auth.accounts.length;i++){
                           accountPermission[i]=res.permissions[0].required_auth.accounts[i].permission
                         }
          })
-         let abi;
-        // await eos.getAbi({ account_name: "zjubcatest11"}).then(ress=>{abi});
-        //eos.fc.abiCache.abi("zjubcatest11",abi)
          console.log("ok")
+         //set kongtou actions;
             for(var i=0;i<this.selected.length;i++){
                 this.actionss[i]={
                   account: "zjubcatest11", //has to be the smart contract name of the token you want to transfer - eosio for EOS or eosjackscoin for JKR for example
@@ -132,33 +181,90 @@ import Eos from 'eosjs'
             await scatter.getIdentity({accounts: [network]});
             const account = scatter.identity.accounts.find(x => x.blockchain === 'eos');
             const Scattereos = scatter.eos(network, Eos, {expireInSeconds: 20});
-            // await eos.getAbi({ account_name: "zjubcatest11"});
-            console.log(Scattereos.contract("eosio.msig"))
-            // eos.contract("zjubcatest11")
-            //         .then(rs => {console.log(rs.fc.abi)})
-            // console.log(eos.fc.abiCache)
-            //eos.fc.toBuffer("",abi);});
             console.log(Scattereos);
-            console.log(Scattereos.fc.abiCache);
-                            var res = Scattereos.contract('eosio.msig').then(contract=>{
-                              contract.propose({
-                                    proposer:account.name,
-                                    proposal_name:"kongtou",
-                                    requested:accountPermission,
-                                    trx:{
-                                      "expiration": "2018-08-11T15:28:57",
-                                      "ref_block_num": 0,
-                                      "ref_block_prefix": 0,
-                                      "max_net_usage_words": 0,
-                                      "max_cpu_usage_ms": 0,
-                                      "delay_sec": 0,
-                                      "context_free_actions": [],
-                                      "actions":this.actionss,
-                                    }                      
-                          },{broadcast: false, sign: false})}).catch(error => {
-                              console.error(error);
-                          });
-                          // var res = await eos.transaction({
+            Scattereos.fc.abiCache.abiAsync("zjubcatest11");
+
+                          let definitions = {
+                              message_type: 'fixed_string16', // CustomType: built-in type
+                              account_name: 'fixed_string16', // CustomType: built-in type
+                              message: { // struct
+                                  fields: {
+                                    proposer: 'account_name',
+                                    proposal_name: 'account_name',
+                                    requested: 'permission_level[]',
+                                    trx: 'trx'
+                                  }
+                              }
+                          }
+                          //sucess sign signiture
+                          // await Scattereos.transaction({
+                          //   actions:[{
+                          //           account:"eosio.msig",
+                          //           name:"approve",
+                          //           authorization:[{
+                          //             actor:account.name,
+                          //             permission:account.authority
+                          //           }],
+                          //           data:{
+                          //           proposer:"yangjiani233",
+                          //           proposal_name:"kongtou",
+                          //           level:{
+                          //               actor:account.name,
+                          //               permission:account.authority,
+                          //           },                                   
+                          //           }
+
+                          //   }]
+                 
+                          // }).catch(error => {
+                          //     console.error(error);
+                          // });   
+                          // Warning: Do not use {defaults: true} in production
+                          let fcbuffer = Fcbuffer(definitions, {defaults: true})
+                          let fcbuffer2 = fcbuffer.extend({
+                                permission_name: 'fixed_string16',
+                                permission_level: {
+                                    fields: {
+                                      actor: 'account_name',
+                                      permission: 'permission_name'
+                                    }
+                                },
+                                action_name: 'fixed_string16',
+                                action: {
+                                    fields: {
+                                      account: 'account_name',
+                                      name: 'action_name',
+                                      authorization:'permission_level[]',
+                                      data:'bytes'
+                                    }
+                                },
+                                trx:{
+                                  fields:{
+                                      expiration: 'time',
+                                      ref_block_num: "uint16",
+                                      ref_block_prefix: "uint32",
+                                      max_net_usage_words: "varuint32",
+                                      max_cpu_usage_ms: "uint8",
+                                      delay_sec: "varuint32",
+                                      actions:"action[]",   
+                                  }
+                                                                         
+                                    },
+                            })
+                            assert(fcbuffer2.errors.length === 0, fcbuffer2.errors)
+
+                          // If there are no errors, you'll get your structs
+                          var {message} = fcbuffer2.structs
+                          console.log(message.toObject());
+            Scattereos.getTableRows({code: "eosio.msig",scope:"yangjiani233",table:"proposal",json:"true"}).then(ress=>{
+              console.log(ress);
+              console.log(eos);
+              eos.deserializeTransaction({transaction:ress.rows[0].packed_transaction}).then(re=>{
+                console.log(re);
+              })
+                          console.log(Fcbuffer.fromBuffer(message,ress.rows[0].packed_transaction))});
+                          //propose
+                          // var res = await Scattereos.transaction({
                           //   actions:[{
                           //           account:"eosio.msig",
                           //           name:"propose",
@@ -171,7 +277,7 @@ import Eos from 'eosjs'
                           //           proposal_name:"kongtou",
                           //           requested:accountPermission,
                           //           trx:{
-                          //             "expiration": "2018-08-11T15:28:57",
+                          //             "expiration": new Date(Date.parse(new Date()) + 1000 * 60 * 10),
                           //             "ref_block_num": 0,
                           //             "ref_block_prefix": 0,
                           //             "max_net_usage_words": 0,
@@ -182,20 +288,23 @@ import Eos from 'eosjs'
                           //           }                                           
                           //           }
 
+
                           //   }]
                  
                           // }).catch(error => {
                           //     console.error(error);
                           // });
-
           // })
          
         })
-        }
+        },
+        */
+
     },
     computed:{
         message:function(){
-            this.getMembers();
+            //this.getMembers();
+            this.getTransaction();
             return "请选择"
         }
     }

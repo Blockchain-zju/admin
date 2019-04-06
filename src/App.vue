@@ -3,18 +3,21 @@
     <md-app>
       <md-app-toolbar class="md-primary" style="display:flex">
               <div class="md-toolbar-row">
-        <div class="md-toolbar-section-start" style="display:none">
-          <md-button class="md-icon-button">
+        <div class="md-toolbar-section-start" >
+          <md-button class="md-icon-button"  @click="menuVisible = !menuVisible">
             <md-icon>menu</md-icon>
           </md-button>
         </div>
         <div class="md-toolbar-section-start" >
+
           <md-title>ZJUBCA</md-title>
         </div>
+
+
       </div>
       </md-app-toolbar>
 
-      <md-app-drawer md-permanent="full">
+      <md-app-drawer md-permanent="full" :md-active.sync="menuVisible">
         <md-toolbar class="md-transparent" md-elevation="0">
           <md-button class="md-icon-button md-dense md-primary">
             <md-icon><router-link to="/account">person</router-link></md-icon>
@@ -23,20 +26,18 @@
         </md-toolbar>
 
         <md-list>
-          <md-list-item>
-            <md-icon>home</md-icon>
-            <span class="md-list-item-text"><router-link to="/">首页</router-link></span>
-          </md-list-item>
+
 
 
           <md-list-item>
             <md-icon>verified_user</md-icon>
-            <span class="md-list-item-text"><router-link to="/account">待生效交易</router-link></span>
+            <span class="md-list-item-text"><router-link to="/signiture">待生效交易</router-link></span>
           </md-list-item>
 
           <md-list-item>
             <md-icon>supervisor_account</md-icon>
             <span class="md-list-item-text"><router-link to="/kongtou">空投</router-link></span>
+
           </md-list-item>
         </md-list>
       </md-app-drawer>
@@ -44,9 +45,9 @@
         <md-app-content >
           <router-view></router-view>
         </md-app-content>
-    <footer >
-		  zjubca.token 
-    </footer>        
+
+
+     
     </md-app>
 
   </div>
@@ -80,30 +81,31 @@
   }
   #newitem {
     width: 50vw;
+
   }
-  footer{
-    text-align: center;
-    border:1px rgb(107, 105, 105) dotted;
+  #newitem {
+    width: 50vw;
   }
 </style>
 
 <script>
-import axios from 'axios';
 export default {
   name: 'Normal',
   data(){
     return{
       Account:null,
+      menuVisible: false
     }
   },
   created:{
     
   },
   computed:{
+    eosaccount:function(){
 
+    }
   },
   methods:{
-
   }
 }
 

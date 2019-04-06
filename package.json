@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "eosjs": "^16.0.9",
+    "eosjs": "^20.0.0",
+    "eosjs-api": "^7.0.4",
+    "node-fetch": "^2.3.0",
     "scatterjs-core": "^2.4.0",
     "scatterjs-plugin-eosjs": "^1.4.0",
     "vue": "^2.5.17",
