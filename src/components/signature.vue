@@ -16,7 +16,7 @@
       <tr @click="onSelect(item)" v-for="item in transactions" v-bind:key="item.height">
         <td>{{item.proposer}}</td>
         <td>{{item.proposa_name}}</td>
-        <td>{{item.packed_transaction}</td>
+        <td>{{item.packed_transaction}}</td>
         <!-- <td><md-button @click="approve(item)" >approve</md-button></td>
         <td><md-button @click="unapprove(item)" >unapprove</md-button></td> -->
         </tr>
@@ -61,9 +61,7 @@ const api = new Api({ rpc, textDecoder: new TextDecoder(), textEncoder: new Text
         }
         var t=new Uint8Array(pp);
         console.log(t);
-        const res=await api.deserializeTransactionWithActions({
-          transaction:resp.rows[0].packed_transaction
-        });
+        const res=await api.deserializeTransactionWithActions(t);
         console.log(res);
         },
       },

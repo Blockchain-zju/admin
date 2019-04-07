@@ -9,7 +9,9 @@ import {
   MdSnackbar,
   MdDialog,
   MdField,
-  MdRadio
+  MdRadio,
+  MdList,
+  MdApp
 } from 'vue-material/dist/components'
 import 'vue-material/dist/vue-material.min.css'
 import 'vue-material/dist/theme/default.css'
@@ -28,7 +30,8 @@ Vue.use(MdSnackbar);
 Vue.use(MdDialog);
 Vue.use(MdField);
 Vue.use(MdRadio);
-Vue.use(router);
+Vue.use(MdList);
+Vue.use(MdApp);
 Vue.use(infiniteScroll);
 ScatterJS.plugins(new ScatterEOS());
 

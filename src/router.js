@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import kongtou from './components/kongtou.vue'
-import signiture from './components/signiture.vue'
+import signiture from './components/signature.vue'
 
 Vue.use(Router)
 export default new Router({

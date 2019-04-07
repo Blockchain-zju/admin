@@ -1,4 +1,4 @@
-# zjubca.vote
+# zjubca.admin
 
 ## Project setup
 ```
